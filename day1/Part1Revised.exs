@@ -1,29 +1,39 @@
-defmodule Part1 do
+defmodule Part1Revised do
   def main do
     [in_file] = System.argv()
 
-    [left, right] = in_file
-      |> File.stream!()
-      |> Enum.map(fn line -> line
-        |> String.split()
-        |> Enum.map(&String.to_integer/1)
-      end )
-      |> Enum.zip()
-
-    left = left |> Tuple.to_list() |> Enum.sort()
-    right = right |> Tuple.to_list() |> Enum.sort()
-
-    diff_lists(left, right) |> IO.inspect()
+    {left, right} = parse_input(in_file)
+    total_distance = solve(left, right)
+    IO.puts(total_distance)
   end
 
-  def diff_lists(left, right), do: do_diff_lists(left, right, [])
+  defp parse_input(in_file) do
+    in_file
+    |> File.stream!()
+    |> Enum.map(fn line ->
+      line
+      |> String.split()
+      |> Enum.map(&String.to_integer/1)
+      |> List.to_tuple()
+    end)
+    |> Enum.unzip()
+  end
 
-  defp do_diff_lists([], [], paired), do: paired |> Enum.sum()
+  defp solve(left, right) do
+    left = Enum.sort(left)
+    right = Enum.sort(right)
 
-  defp do_diff_lists([l_head | l_tail], [r_head | r_tail], paired) do
-    diff = l_head - r_head |> abs()
-    do_diff_lists(l_tail, r_tail, [diff | paired])
+    diff_lists(left, right)
+  end
+
+  def diff_lists(left, right), do: do_diff_lists(left, right, 0)
+
+  defp do_diff_lists([], [], sum), do: sum
+
+  defp do_diff_lists([lh | lt], [rh | rt], sum) do
+    diff = abs(lh - rh)
+    do_diff_lists(lt, rt, sum + diff)
   end
 end
 
-Part1.main()
+Part1Revised.main()
